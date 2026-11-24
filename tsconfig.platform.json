@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "paths": {
+      "@/*": ["./src/*"],
+      "next/link": ["./src/platform/router.tsx"],
+      "next/navigation": ["./src/platform/router.tsx"],
+      "next/image": ["./src/platform/image.tsx"]
+    }
+  },
+  "include": ["src/platform", "src/components/platform-v1", "src/lib/platform"]
+}

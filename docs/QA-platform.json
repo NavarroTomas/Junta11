@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-22T20:16:51.729Z",
+  "sourceCommit": "d038df8183954d51752f9527e520602c2a062871",
+  "componentHashes": 17,
+  "stableRouter": true,
+  "publicConfigurationOnly": true,
+  "checks": [
+    {
+      "route": "/",
+      "status": 200,
+      "bytes": 4112
+    },
+    {
+      "route": "/login",
+      "status": 200,
+      "bytes": 499
+    },
+    {
+      "route": "/registro",
+      "status": 200,
+      "bytes": 499
+    },
+    {
+      "route": "/crear-liga",
+      "status": 200,
+      "bytes": 499
+    },
+    {
+      "route": "/recuperar",
+      "status": 200,
+      "bytes": 499
+    },
+    {
+      "route": "/mis-ligas",
+      "status": 200,
+      "bytes": 499
+    },
+    {
+      "route": "/demo",
+      "status": 200,
+      "bytes": 499
+    },
+    {
+      "route": "/panel/00000000-0000-4000-8000-000000000001",
+      "status": 200,
+      "bytes": 499
+    },
+    {
+      "route": "/l/liga-prueba",
+      "status": 200,
+      "bytes": 499
+    },
+    {
+      "route": "/platform.js",
+      "status": 200,
+      "bytes": 1647432
+    },
+    {
+      "route": "/story.js",
+      "status": 200,
+      "bytes": 13968
+    },
+    {
+      "route": "/story.css",
+      "status": 200,
+      "bytes": 13502
+    },
+    {
+      "route": "/story-sprite.png",
+      "status": 200,
+      "bytes": 633518
+    }
+  ],
+  "notVerified": [
+    "Browser rendering",
+    "Real email delivery and allowed redirect URLs",
+    "Authenticated web CRUD after publication"
+  ]
+}

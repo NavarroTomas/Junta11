@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import styles from "@/app/landing.module.css";
+import styles from "@/app/local/landing.module.css";
 
 // Reemplazá cada texto e imagen para personalizar el carrusel.
 const slides = [

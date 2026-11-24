@@ -151,7 +151,7 @@ export default function APAUserMenu() {
     setOpen(false);
     clearAdminPermissionsCache();
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push("/liga/login");
     router.refresh();
   }
 
@@ -162,8 +162,8 @@ export default function APAUserMenu() {
   if (!profile) {
     return (
       <div className={estilos.guestActions}>
-        <Link href="/login" className={estilos.loginLink}>Ingresar</Link>
-        <Link href="/registro" className={estilos.joinLink}>Unite a Liga <span aria-hidden="true">→</span></Link>
+        <Link href="/liga/login" className={estilos.loginLink}>Ingresar</Link>
+        <Link href="/liga/registro" className={estilos.joinLink}>Unite a Liga <span aria-hidden="true">→</span></Link>
       </div>
     );
   }

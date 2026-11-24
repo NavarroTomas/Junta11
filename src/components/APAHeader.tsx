@@ -126,19 +126,19 @@ export default function APAHeader() {
     const publicLinks=[["Inicio","/liga"],["Partidos y fixture","/fixture"],["Posiciones","/divisiones"],["Equipos","/clubes"],["Jugadores y estadísticas","/jugadores"]];
     const adminLinks=[["Panel de administración","/admin"],["Partidos y resultados","/admin/partidos"],["Torneos","/admin/torneos"],["Equipos","/admin/clubes"],["Planteles y jugadores","/admin/plantillas"],["Noticias","/admin/noticias"]];
     const links=menuArea==="web"?publicLinks:adminLinks;
-    return <><header className={estilos.leagueHeader}><Link href="/liga" prefetch={false} className={estilos.leagueBrand}>{localLeague.name}</Link><div className={estilos.headerActions}><Link href="/mis-ligas" prefetch={false}>Mis ligas</Link><button type="button" className={estilos.menuTrigger} aria-haspopup="dialog" aria-expanded={mobileOpen} aria-controls="league-menu" onClick={()=>{setClosing(false);setMenuArea(pathname.startsWith("/admin")?"admin":"web");setMobileOpen(true);}}>Menú</button></div></header>
+    return <><header className={estilos.leagueHeader}><Link href="/liga" prefetch={false} className={estilos.leagueBrand}>{localLeague.name}</Link><div className={estilos.headerActions}><Link href="/local/mis-ligas" prefetch={false}>Mis ligas</Link><button type="button" className={estilos.menuTrigger} aria-haspopup="dialog" aria-expanded={mobileOpen} aria-controls="league-menu" onClick={()=>{setClosing(false);setMenuArea(pathname.startsWith("/admin")?"admin":"web");setMobileOpen(true);}}>Menú</button></div></header>
       <dialog ref={drawer} id="league-menu" className={estilos.drawer} data-closing={closing} aria-labelledby="league-menu-title" onCancel={e=>{e.preventDefault();closeMenu();}} onClose={()=>{setMobileOpen(false);setClosing(false);if(closeTimer.current)clearTimeout(closeTimer.current);closeTimer.current=null;}} onClick={e=>{if(e.target===e.currentTarget)closeMenu();}}>
         <div className={estilos.drawerPanel}><div className={estilos.drawerTop}><h2 id="league-menu-title">{localLeague.name}</h2><button type="button" onClick={()=>closeMenu()}>Cerrar</button></div>
           <div className={estilos.drawerSwitch} aria-label="Tipo de navegación"><button type="button" aria-pressed={menuArea==="web"} onClick={()=>setMenuArea("web")}>Ver la liga</button><button type="button" aria-pressed={menuArea==="admin"} onClick={()=>setMenuArea("admin")}>Administrar</button></div>
           <nav className={estilos.drawerNav} aria-label={menuArea==="web"?"Secciones de la liga":"Administración de la liga"}>{links.map(([name,href])=><Link key={href} href={href} prefetch={false} aria-current={pathname===href?"page":undefined} onClick={e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();closeMenu(href);}}>{name}</Link>)}</nav>
-          <div className={estilos.drawerBottom}><Link href="/mis-ligas" prefetch={false} onClick={e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();closeMenu("/mis-ligas");}}>Cambiar de liga</Link><Link href="/" onClick={e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();closeMenu("/");}}>Gestioná tu Liga</Link><p>Estás usando una sesión de prueba.</p></div>
+          <div className={estilos.drawerBottom}><Link href="/local/mis-ligas" prefetch={false} onClick={e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();closeMenu("/local/mis-ligas");}}>Cambiar de liga</Link><Link href="/local" onClick={e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();closeMenu("/local");}}>Gestioná tu Liga</Link><p>Estás usando una sesión de prueba.</p></div>
         </div>
       </dialog></>;
   }
   return (
     <header className={estilos.header}>
       <div className={estilos.interior}>
-        <Link className={estilos.marca} href="/" aria-label="Gestioná tu Liga - Inicio">
+        <Link className={estilos.marca} href="/local" aria-label="Gestioná tu Liga - Inicio">
           <span className={estilos.logoCaja}>
             <Image
               src="/logo-apa-oficial.webp"

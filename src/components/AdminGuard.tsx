@@ -33,7 +33,7 @@ export default function AdminGuard({
 
       if (!user) {
         clearAdminPermissionsCache();
-        router.push("/login");
+        router.push("/liga/login");
         setVerificando(false);
         return;
       }

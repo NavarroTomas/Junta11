@@ -1,0 +1,31 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),Module=require('node:module');
+const ts=require('typescript');
+for(const ext of ['.ts','.tsx'])require.extensions[ext]=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{fileName:file,compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,file);
+require.extensions['.css']=(mod)=>{mod.exports=new Proxy({},{get:(_,name)=>name==='__esModule'?false:String(name)});};
+const originalLoad=Module._load,React=require('react');
+Module._load=function(name,parent,isMain){if(name.startsWith('@/'))return originalLoad.call(this,path.resolve(__dirname,'../src',name.slice(2)),parent,isMain);if(name==='next/navigation')return {useRouter:()=>({push(){},replace(){}})};if(name==='next/image')return {__esModule:true,default:({fill,priority,...props})=>React.createElement('img',props)};if(name==='next/link')return {__esModule:true,default:({children,...props})=>React.createElement('a',props,children)};return originalLoad.call(this,name,parent,isMain);};
+const render=require('react-dom/server').renderToStaticMarkup;
+const Menu=require('../src/components/platform-v1/AdministrationMenu.tsx').default;
+const Picker=require('../src/components/platform-v1/CompetitionPicker.tsx').default;
+const menu=render(React.createElement(Menu,{name:'Liga',teams:true,onSelect:()=>{}}));
+assert.equal((menu.match(/<button /g)||[]).length,8);assert.ok(!menu.includes('<aside'));assert.ok(menu.includes('Enlace'));assert.ok(!/[←→↗]/u.test(menu));
+const players=render(React.createElement(Menu,{name:'Liga',teams:false,onSelect:()=>{}}));assert.equal((players.match(/<button /g)||[]).length,7);assert.ok(!players.includes('Equipos'));
+const data={league:{id:'l'},seasons:[{id:'s',league_id:'l',name:'2026'}],divisions:[{id:'d',league_id:'l',season_id:'s',name:'Primera'}],competitions:[{id:'c',league_id:'l',season_id:'s',division_id:'d',name:'Liga'}]};
+const picker=d=>render(React.createElement(Picker,{data:d,value:'c',onChange:()=>{}}));assert.equal(picker(data),'','One season and competition need no selector');
+assert.ok(picker({...data,seasons:[...data.seasons,{id:'s2',league_id:'l',name:'2027'}]}).includes('Temporada'));
+const multi=picker({...data,competitions:[...data.competitions,{...data.competitions[0],id:'c2',name:'Copa'}]});assert.ok(multi.includes('Competencia'));assert.ok(!multi.includes('Temporada'));
+console.log('Presentation regressions passed: menu modules, no sidebar/arrows, single season hidden, multiple competitions reachable');
+const {exampleLeague}=require('../src/lib/platform/example.ts');
+const {playerSummary,profilePath}=require('../src/lib/platform/profiles.ts');
+const Profile=require('../src/components/platform-v1/PublicProfile.tsx').default;
+const sample=exampleLeague();
+assert.equal(playerSummary(sample,'p0').played,1);
+assert.equal(playerSummary(sample,'p0').goals,1);
+assert.equal(playerSummary({...sample,stats:[...sample.stats,{...sample.stats[0],match_id:'m2',goals:99}]},'p0').goals,1,'Scheduled matches do not inflate player stats');
+assert.equal(profilePath(sample,'jugadores','p0'),'/demo/jugadores/p0');
+for(const [kind,id] of [['equipos','t0'],['jugadores','p0'],['partidos','m0'],['noticias','n0']]){
+ const html=render(React.createElement(Profile,{data:sample,view:{kind,id}}));assert.ok(html.includes('Ver liga'));assert.ok(!html.includes('No encontramos esta ficha'));
+}
+assert.ok(render(React.createElement(Profile,{data:sample,view:{kind:'jugadores',id:'missing'}})).includes('No encontramos esta ficha'));
+assert.ok(render(React.createElement(Profile,{data:{...sample,news:sample.news.map(n=>({...n,published:false}))},view:{kind:'noticias',id:'n0'}})).includes('No encontramos esta ficha'),'Draft news has no public article');
+console.log('Public profile regressions passed: four views, missing records, draft visibility and completed-match statistics');

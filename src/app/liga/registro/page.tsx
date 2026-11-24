@@ -166,7 +166,7 @@ export default function RegistroPage() {
     setCargando(false);
 
     setTimeout(() => {
-      router.push("/login");
+      router.push("/liga/login");
     }, 2500);
   }
 
@@ -421,7 +421,7 @@ export default function RegistroPage() {
 
             <p className="text-center text-sm text-zinc-500">
               ¿Ya tenés cuenta?{" "}
-              <Link href="/login" className="font-black text-sky-300 hover:text-white">
+              <Link href="/liga/login" className="font-black text-sky-300 hover:text-white">
                 Iniciar sesión
               </Link>
             </p>

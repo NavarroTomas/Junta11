@@ -455,7 +455,7 @@ export default function Navbar() {
     setPerfil(null);
     setPuedeVerPanel(false);
     setMobileOpen(false);
-    router.push("/login");
+    router.push("/liga/login");
   }
 
   const nombreVisible = perfil?.display_name || perfil?.username || "Usuario";
@@ -596,14 +596,14 @@ export default function Navbar() {
       return (
         <div className={`${compact ? "grid grid-cols-2 gap-2" : "hidden items-center gap-2 md:flex"}`}>
           <Link
-            href="/login"
+            href="/liga/login"
             className="rounded-2xl border border-sky-400/25 bg-sky-400/10 px-4 py-2 text-center text-sm font-black uppercase text-sky-300 transition hover:bg-sky-400 hover:text-black"
           >
             Login
           </Link>
 
           <Link
-            href="/registro"
+            href="/liga/registro"
             className="rounded-2xl border border-yellow-400/25 bg-yellow-400/10 px-4 py-2 text-center text-sm font-black uppercase text-yellow-300 transition hover:bg-yellow-400 hover:text-black"
           >
             Registro

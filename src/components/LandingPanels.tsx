@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import styles from "@/app/landing.module.css";
+import styles from "@/app/local/landing.module.css";
 
 export default function LandingPanels() {
   useEffect(() => {

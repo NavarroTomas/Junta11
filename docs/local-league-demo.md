@@ -1,6 +1,6 @@
 # Adaptación local sobre APA
 
-La landing Plantilla 1, el acceso de prueba y Mis ligas son la entrada a la plataforma. Abrir una liga selecciona su contexto y dirige a /liga, que renderiza HomeLeaguePortal, la portada original.
+La landing Plantilla 1 (`/local`), el acceso de prueba (`/local/login`) y Mis ligas (`/local/mis-ligas`) son la entrada a la experiencia local. Abrir una liga selecciona su contexto y dirige a /liga, que renderiza HomeLeaguePortal, la portada original.
 
 Se reutilizan las rutas /fixture, /divisiones, /clubes, /jugadores y /admin, con los gestores originales de clubes, plantillas, noticias y partidos. La ruta previa /mis-ligas/[leagueId] solo redirige a /liga y conserva compatibilidad con enlaces anteriores.
 

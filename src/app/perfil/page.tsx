@@ -127,7 +127,7 @@ export default function PerfilPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push("/login");
+      router.push("/liga/login");
       return;
     }
 
@@ -324,7 +324,7 @@ export default function PerfilPage() {
 
   async function cerrarSesion() {
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push("/liga/login");
   }
 
   if (loading) {

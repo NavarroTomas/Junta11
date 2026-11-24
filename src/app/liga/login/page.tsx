@@ -100,7 +100,7 @@ export default function LoginPage() {
 
               <p className="text-center text-sm text-zinc-500">
                 ¿No tenés cuenta?{" "}
-                <Link href="/registro" className="font-black text-sky-300 hover:text-white">
+                <Link href="/liga/registro" className="font-black text-sky-300 hover:text-white">
                   Registrate
                 </Link>
               </p>

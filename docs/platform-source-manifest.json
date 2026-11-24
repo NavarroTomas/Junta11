@@ -1,0 +1,27 @@
+{
+  "source": "NavarroTomas/gestiona-tu-liga",
+  "commit": "d038df8183954d51752f9527e520602c2a062871",
+  "files": {
+    "Access.tsx": "4182936c26ec5c0eddef77fc2df7f4a811b13a91008023d5983ba30d4cebadc8",
+    "CompetitionPicker.tsx": "6bbf224ee6b1cbdd9f0742f05f51fb791cb69221e3453bcf9e22a892f83e6da8",
+    "Entities.tsx": "46fd14ba6353a6a207b241dda7cb95574ffe9cc1bc2ba40715f4943daf127b0f",
+    "LeagueViews.tsx": "e34c1f98b84b91ebfbc04138f0dff521006da58941c454ce3f3cf828fcc5d950",
+    "Manager.tsx": "2836c63457f1db4c32e39bc577b8038d66e407639f4386ce5561088d41ab95e0",
+    "MatchCalendar.tsx": "3cd998b721cad774a1b56816d06a485ef07335f275f44d28f0fd7b475a49bc52",
+    "MatchesManager.tsx": "b02712bd2580425034be8e57614102aa1b62e8109126e75defe93a9dd6ca0c7b",
+    "NewsManager.tsx": "ec79f14332ce04e25ac1f5915f7168d923bfdd751d67c5f7a03e43aa6af707d5",
+    "Onboarding.tsx": "ecd0108e7025428619d04bd681ecf687e1c3dfd7a5f1bb3659746c265f074fa3",
+    "platform.module.css": "1b8ae1daf21f7726c72b7da76578cabd4f30126524028d732e62d1d2170cccb8",
+    "presentation.module.css": "1bae51776e4491975cec1083ebca08f33219c86f0d1ea1adad810763946ae346",
+    "Presentation.tsx": "3cdb81e545fdecccc36c9244734b48acfb4a693b1e5906d981fcddfb6e092e81",
+    "PublicLeague.tsx": "ec7d7cd9d20a106bb746ef61a9f1d6e8b35d96659285c133afeb5dbe098f911e",
+    "Recovery.tsx": "1d558a80c44cda9523834e49b4bb1802bd4757b803178db443116ffe0c97269a",
+    "Settings.tsx": "ddfe931c83f9b6060363b7c171703026eb4240fd0bf83c4bcffcf8b4dcbe3294",
+    "StructureManager.tsx": "a17a4ee46473f0763e5effa2c52c09ad2899a530433deaab2fe76602b786fb29",
+    "ui.tsx": "cd3e83650185004c69832011889fc2084da6975f28cf70f374b6d48382b1fbb2",
+    "PasswordInput.tsx": "c5fb14e9a671dd2f0a75006ce87efbf5efc1a3a27f88fca1ac17c2805193b41d",
+    "AdministrationMenu.tsx": "d7b39862bba06509f41129e7a8d1a9b27e6613b129bf1d579fbc362a11d232fe",
+    "PublicProfile.tsx": "342ccba104d2f806ac6eb7fee2183f6d76fc8edd98ef58befae214445434121a"
+  },
+  "localChanges": "Minimal authentication and registration controls; source in this repository is authoritative."
+}

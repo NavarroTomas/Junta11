@@ -30,7 +30,7 @@ export default function PermissionGuard({
       if (!activo) return;
 
       if (!user) {
-        router.push("/login");
+        router.push("/liga/login");
         setVerificando(false);
         return;
       }

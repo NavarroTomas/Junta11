@@ -25,8 +25,9 @@ function notMatches(path, pattern, message) {
   assert.doesNotMatch(content, pattern, message);
 }
 
-const registrationPath = "src/app/registro/page.tsx";
+const registrationPath = "src/app/liga/registro/page.tsx";
 const layoutPath = "src/app/layout.tsx";
+const legacyShellPath = "src/components/LegacyLeagueShell.tsx";
 const adminLayoutPath = "src/app/admin/layout.tsx";
 const adminGuardPath = "src/components/AdminGuard.tsx";
 const nextConfigPath = "next.config.ts";
@@ -98,7 +99,7 @@ includes(
   "Cookie consent storage key must remain present.",
 );
 includes(
-  layoutPath,
+  legacyShellPath,
   "<CookieConsent />",
   "Tracking must remain gated behind the CookieConsent component.",
 );

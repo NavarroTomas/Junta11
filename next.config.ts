@@ -39,9 +39,25 @@ const noIndexHeader = {
 };
 
 const nextConfig: NextConfig = {
+  agentRules: false,
   poweredByHeader: false,
   turbopack: {
     root: process.cwd(),
+  },
+  async rewrites() {
+    const platform = "/junta11/platform.html";
+    return [
+      { source: "/", destination: "/junta11/index.html" },
+      ...["login", "registro", "crear-liga", "recuperar", "mis-ligas", "demo"].map(
+        (route) => ({ source: `/${route}`, destination: platform }),
+      ),
+      { source: "/panel/:id([0-9a-fA-F-]{36})", destination: platform },
+      { source: "/:prefix(liga|l)/:slug", destination: platform },
+      ...["/:prefix(liga|l)/:slug", "/demo"].map((prefix) => ({
+        source: `${prefix}/:kind(equipos|jugadores|partidos|noticias)/:id`,
+        destination: platform,
+      })),
+    ];
   },
   async headers() {
     return [
@@ -63,6 +79,10 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/registro",
+        headers: [noIndexHeader],
+      },
+      {
+        source: "/:privateRoute(crear-liga|recuperar|mis-ligas|panel)/:path*",
         headers: [noIndexHeader],
       },
     ];

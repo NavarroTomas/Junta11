@@ -50,5 +50,5 @@ jobs:
           path: typecheck.log
           retention-days: 1
 
-      - name: Security regression checks
-        run: npm run test:security
+      - name: Regression checks
+        run: npm test
