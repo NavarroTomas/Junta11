@@ -218,8 +218,24 @@ body:has(.leagueDrawer[open]){overflow:hidden}
 .matchWizard details[open]>summary{margin-bottom:16px}
 .participantPicker{display:grid;gap:8px}
 .pickerHeading,.wizardActions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.playerTiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,115px),1fr));gap:8px}
-.playerTiles label{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px;padding:12px;min-height:82px;border:1px solid var(--line);border-radius:12px;text-align:center;overflow-wrap:anywhere;cursor:pointer}
-.playerTiles label:has(:checked){background:color-mix(in srgb,var(--accent) 9%,var(--surface));border-color:var(--accent)}
-.playerTiles input{accent-color:var(--accent)}
+.matchWizard[data-step="2"],.matchWizard[data-step="3"]{width:min(100%,960px);gap:clamp(16px,2.5vw,28px)}
+.playerTiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,125px),1fr));gap:10px}
+.playerTiles button{min-width:0;display:grid;justify-items:center;align-content:center;gap:9px;padding:14px 8px;min-height:106px;border:1px solid #bcbfba;border-radius:14px;background:white;color:#191919;font-size:17px;overflow-wrap:anywhere}
+.playerTiles button[aria-pressed=true]{background:#f06a3d;color:#191919;border:2px solid #913413;padding:13px 7px}
+.themed .playerTiles .monogram{width:44px;height:44px;background:#f3f0e8;color:#292a28;border:1px solid #c5b9aa}
+.matchWizard .monogram img{width:100%;height:100%;object-fit:cover}
+.splitModes,.squadSheets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,2vw,20px)}
+.splitModes button,.redistribute{min-height:54px;padding:10px;border:1px solid var(--line);border-radius:14px;font-weight:650;font-size:clamp(16px,2vw,21px);color:var(--ink);background:var(--surface)}
+.splitModes button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+.redistribute{width:100%;border-color:var(--ink)}
+.squadSheet{min-width:0;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.squadSheet header{display:flex;align-items:center;gap:10px;padding:16px;background:var(--ink);color:var(--surface)}
+.squadSheet header input{width:100%;min-width:0;background:transparent;color:inherit;border:0;border-bottom:1px solid currentColor;border-radius:0;font-size:clamp(20px,2.5vw,30px);font-weight:700}
+.squadSheet header span{font-size:18px;font-weight:600}
+.squadSheet ul{margin:0;padding:0 16px;list-style:none}
+.squadSheet li{display:flex;align-items:center;gap:12px;padding:12px 0}
+.squadSheet li+li{border-top:1px solid var(--line)}
+.squadSheet li div{display:grid;overflow-wrap:anywhere}
+.squadSheet li strong{font-size:clamp(17px,2vw,21px)}
+@media(max-width:560px){.squadSheets{grid-template-columns:1fr}.playerTiles{grid-template-columns:repeat(auto-fill,minmax(min(100%,98px),1fr))}}
 .matchWizard small{font-weight:400;color:var(--muted)}

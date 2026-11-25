@@ -4,7 +4,7 @@ import type { LeagueBundle, Match, MatchPlayer, Player } from "@/lib/platform/ty
 import { generateFixture, removeEntity, saveEntity, saveResult, updateMatchSchedule } from "@/lib/platform/api";
 import { messageFor, platformClient } from "@/lib/platform/client";
 import { matchLabel, playerStandings, splitPlayers, validateResult } from "@/lib/platform/domain";
-import { Notice } from "./ui";
+import { Monogram, Notice } from "./ui";
 import ParticipantPicker from "./ParticipantPicker";
 import MatchCalendar from "./MatchCalendar";
 import {argentinaDateTimeLocal,argentinaDateTimeIso} from "@/lib/platform/calendar";
@@ -95,7 +95,7 @@ export default function MatchesManager({ data, onChanged, startCreating=false, a
             }
             void submitMatch(event);
         }
-        return <form className={s.matchWizard} onSubmit={advance}>
+        return <form className={s.matchWizard} data-step={step} onSubmit={advance}>
             <p className={s.stepCount}>Paso {step} de 3</p>
             <h2 ref={stepHeading} tabIndex={-1}>{["¿Cuándo se juega?", "¿Quiénes juegan?", "Detalles del partido"][step - 1]}</h2>
             {step === 1 && <label className={s.field}>Día y hora de Argentina (opcional)
@@ -114,15 +114,27 @@ export default function MatchesManager({ data, onChanged, startCreating=false, a
             </>)}
             {step === 3 && <>
                 <p>{when ? when.split("T")[0].split("-").reverse().join("/") + " · " + when.split("T")[1] : "Horario a definir"} · {friends ? participants.length + " jugadores" : activeTeams.find(t=>t.id===home)?.name + " vs. " + activeTeams.find(t=>t.id===away)?.name}</p>
-                {friends && split && <details open><summary>Equipos</summary>
-                    <label className={s.field}>Reparto<select value={balanced?"balanced":"random"} onChange={event=>{const mode=event.target.value==="balanced";setBalanced(mode);distribute(mode);}}>
-                        <option value="random">Aleatorio</option><option value="balanced">Equilibrado por nota</option>
-                    </select></label>
-                    <div className={s.formRow}>{(["home","away"] as const).map((side,i)=><div key={side}>
-                        <label className={s.field}>Nombre del equipo {i?"B":"A"}<input required maxLength={80} value={i?awayName:homeName} onChange={event=>(i?setAwayName:setHomeName)(event.target.value)}/></label>
-                        <p>{split[side].map(p=>p.name).join(", ")}</p></div>)}</div>
-                    <button type="button" className={s.outline} onClick={()=>distribute(balanced)}>Volver a repartir</button>
-                </details>}
+                {friends && split && <>
+                    <div className={s.splitModes} role="group" aria-label="Método de reparto">
+                        {[false,true].map(mode => <button key={String(mode)} type="button" aria-pressed={balanced===mode}
+                            onClick={()=>{if(mode!==balanced){setBalanced(mode);distribute(mode);}}}>
+                            {mode ? "Equilibrado por nota" : "Aleatorio"}
+                        </button>)}
+                    </div>
+                    <div className={s.squadSheets}>{(["home","away"] as const).map((side,i)=>
+                        <section key={side} className={s.squadSheet} aria-label={i?awayName:homeName}>
+                            <header>
+                                <input required maxLength={80} aria-label={i?"Nombre del equipo B":"Nombre del equipo A"} value={i?awayName:homeName}
+                                    onChange={event=>(i?setAwayName:setHomeName)(event.target.value)}/>
+                                <span aria-label={split[side].length+" convocados"}>{split[side].length}</span>
+                            </header>
+                            <ul>{split[side].map(player=><li key={player.id}>
+                                <Monogram name={player.name} image={player.photo_url}/>
+                                <div><strong>{player.name}</strong><small>{player.position || "Sin definir"}</small></div>
+                            </li>)}</ul>
+                        </section>)}</div>
+                    <button type="button" className={s.redistribute} onClick={()=>distribute(balanced)}>Volver a repartir</button>
+                </>}
                 <details><summary>Cancha y jornada</summary><div className={s.formRow}>
                     <label className={s.field}>Cancha (opcional)<input maxLength={160} value={venue} onChange={event=>setVenue(event.target.value)}/></label>
                     <label className={s.field}>Jornada<input type="number" required min={1} max={10000} value={round} onChange={event=>setRound(Number(event.target.value))}/></label>

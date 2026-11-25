@@ -1,4 +1,5 @@
 import type { Player } from "@/lib/platform/types";
+import { Monogram } from "./ui";
 import s from "./platform.module.css";
 
 export default function ParticipantPicker({ players, selected, onChange }: {
@@ -19,14 +20,14 @@ export default function ParticipantPicker({ players, selected, onChange }: {
                 {selected.length === players.length ? "Quitar todos" : "Elegir todos"}
             </button>}
         </div>
-        {[...groups].map(([position, members]) => <details key={position}>
+        {[...groups].map(([position, members]) => <details key={position} open>
             <summary>{position} <small>{members.filter(p => selected.includes(p.id)).length} / {members.length}</small></summary>
             <div className={s.playerTiles}>{members.map(player =>
-                <label key={player.id}>
-                    <input type="checkbox" checked={selected.includes(player.id)} onChange={event =>
-                        onChange(event.target.checked ? [...selected, player.id] : selected.filter(id => id !== player.id))}/>
-                    {player.name}
-                </label>
+                <button type="button" key={player.id} aria-pressed={selected.includes(player.id)}
+                    onClick={() => onChange(selected.includes(player.id) ? selected.filter(id => id !== player.id) : [...selected, player.id])}>
+                    <Monogram name={player.name} image={player.photo_url}/>
+                    <strong>{player.name}</strong>
+                </button>
             )}</div>
         </details>)}
     </div>;
