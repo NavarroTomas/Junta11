@@ -5,6 +5,7 @@ import { generateFixture, removeEntity, saveEntity, saveResult, updateMatchSched
 import { messageFor, platformClient } from "@/lib/platform/client";
 import { matchLabel, playerStandings, splitPlayers, validateResult } from "@/lib/platform/domain";
 import { Monogram, Notice } from "./ui";
+import ResultStats from "./ResultStats";
 import ParticipantPicker from "./ParticipantPicker";
 import MatchCalendar from "./MatchCalendar";
 import {argentinaDateTimeLocal,argentinaDateTimeIso} from "@/lib/platform/calendar";
@@ -75,8 +76,18 @@ export default function MatchesManager({ data, onChanged, startCreating=false, a
         setError(issue);
         return;
     } await action(async () => { await saveResult(result.id, h, a, stats); setResult(null); }, "Resultado y estadísticas guardados. Las posiciones ya están actualizadas."); }
-    function togglePlayer(player: Player, side: "home" | "away", checked: boolean) { setStats(old => checked ? [...old.filter(x => x.player_id !== player.id), { match_id: result!.id, league_id: data.league.id, player_id: player.id, side, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0, rating: null }] : old.filter(x => x.player_id !== player.id)); }
-    function changeStat(pid: string, key: keyof MatchPlayer, value: number | null) { setStats(old => old.map(x => x.player_id === pid ? { ...x, [key]: value } : x)); }
+    if (result) return <form className={s.resultEditor} onSubmit={submitResult}>
+        <h2>Resultado del partido</h2>
+        <div className={s.scoreEntry}>{(["home","away"] as const).map(side=>
+            <label key={side}>{matchLabel(result,side,data)}
+                <input type="number" aria-label={"Goles de "+matchLabel(result,side,data)} required min={0} max={999} placeholder="0"
+                    value={side==="home"?homeScore:awayScore} onChange={e=>(side==="home"?setHomeScore:setAwayScore)(e.target.value)}/>
+            </label>)}</div>
+        <ResultStats data={data} match={result} stats={stats} onChange={setStats}/>
+        {error && <Notice error>{error}</Notice>}
+        <div className={s.wizardActions}><button type="button" className={s.outline} disabled={busy} onClick={()=>{setResult(null);setError("");}}>Cancelar</button>
+            <button disabled={busy} className={s.buttonSmall}>{busy?"Guardando…":"Guardar resultado"}</button></div>
+    </form>;
     if (form && !schedule) {
         const enough = friends ? participants.length >= 2 : !!home && !!away && home !== away;
         function distribute(mode: boolean) {
@@ -156,10 +167,7 @@ export default function MatchesManager({ data, onChanged, startCreating=false, a
  {friends && <><div className={s.formRow}><label className={s.field}>Nombre del equipo A<input required maxLength={80} value={homeName} onChange={e => setHomeName(e.target.value)}/></label><label className={s.field}>Nombre del equipo B<input required maxLength={80} value={awayName} onChange={e => setAwayName(e.target.value)}/></label></div>
  </>}
  <div className={s.formRow} style={{ marginTop: 16 }}><label className={s.field}>Día y hora (opcional)<input type="datetime-local" value={when} onChange={e => setWhen(e.target.value)}/></label><label className={s.field}>Cancha (opcional)<input maxLength={160} value={venue} onChange={e => setVenue(e.target.value)}/></label><label className={s.field}>Número de fecha<input type="number" required min={1} max={10000} value={round} onChange={e => setRound(Number(e.target.value))}/></label></div><p className={s.help}>Los horarios se muestran en hora de Argentina.</p><div className={s.editorActions}><button className={s.buttonSmall} disabled={busy}>{busy ? "Guardando…" : "Guardar partido"}</button><button type="button" className={s.textButton} onClick={() => setForm(false)}>Cancelar</button></div></form>}
- {result && <form className={s.editor} onSubmit={submitResult}><h3>{matchLabel(result, "home", data)} vs. {matchLabel(result, "away", data)}</h3><div className={s.formRow}><label className={s.field}>Goles de {matchLabel(result, "home", data)}<input type="number" required min={0} max={999} value={homeScore} onChange={e => setHomeScore(e.target.value)}/></label><label className={s.field}>Goles de {matchLabel(result, "away", data)}<input type="number" required min={0} max={999} value={awayScore} onChange={e => setAwayScore(e.target.value)}/></label></div><p className={s.help}>Marcá solamente a quienes jugaron. Cada participante suma un partido jugado. La nota es opcional y va de 1 a 10. Una participación guardada conserva el lado del partido aunque el jugador cambie de equipo.</p>
- {(["home", "away"] as const).map(side => { const players = data.players.filter(p => friends || (p.team_id === (side === "home" ? result.home_team_id : result.away_team_id) && !data.stats.some(old => old.match_id === result.id && old.player_id === p.id && old.side !== side)) || data.stats.some(old => old.match_id === result.id && old.player_id === p.id && old.side === side)); return <div key={side}><h4>{matchLabel(result, side, data)}</h4><div className={s.tableWrap}>{players.map(p => { const stat = stats.find(x => x.player_id === p.id && x.side === side), otherSide = stats.some(x => x.player_id === p.id && x.side !== side); return <div className={s.statInputs} key={p.id}><label><input type="checkbox" checked={!!stat} disabled={otherSide} onChange={e => togglePlayer(p, side, e.target.checked)}/>{p.name}</label>{(["goals", "assists", "yellow_cards", "red_cards", "rating"] as const).map((key, i) => <label key={key}>{["Goles", "Asist.", "Amar.", "Rojas", "Nota"][i]}<input type="number" aria-label={`${["Goles", "Asistencias", "Amarillas", "Rojas", "Nota"][i]} de ${p.name} (${side === "home" ? "local" : "visitante"})`} disabled={!stat} min={key === "rating" ? 1 : 0} max={key === "rating" ? 10 : key === "yellow_cards" ? 2 : key === "red_cards" ? 1 : 999} step={key === "rating" ? "0.1" : "1"} value={stat?.[key] ?? ""} onChange={e => changeStat(p.id, key, key === "rating" && e.target.value === "" ? null : Number(e.target.value))}/></label>)}</div>; })}</div></div>; })}
- <div className={s.editorActions}><button className={s.buttonSmall} disabled={busy}>{busy ? "Guardando…" : "Guardar resultado"}</button><button type="button" className={s.textButton} onClick={() => setResult(null)}>Cancelar</button></div></form>}
  {deleting && <div className={s.confirmation}><p>¿Eliminar {matchLabel(deleting, "home", data)} vs. {matchLabel(deleting, "away", data)}? También se eliminarán sus estadísticas y se recalcularán las posiciones.</p><div className={s.wrap}><button className={s.danger} disabled={busy} onClick={() => action(async () => { await removeEntity("matches", deleting.id, data.league.id); setDeleting(null); }, "Partido eliminado.")}>Eliminar partido</button><button className={s.textButton} onClick={() => setDeleting(null)}>Cancelar</button></div></div>}
- <MatchCalendar data={data} actions={m => <><button onClick={() => openForm(m)}>Programación</button><button onClick={() => openResult(m)}>{m.status === "completed" ? "Editar resultado" : "Cargar resultado"}</button>{m.status === "completed" && <button disabled={busy} onClick={() => action(async () => { await saveResult(m.id, null, null, []); }, "El resultado fue anulado y sus estadísticas se retiraron.")}>Anular resultado</button>}<button onClick={() => setDeleting(m)}>Eliminar</button></>}/>
+ <MatchCalendar data={data} actions={m => <><button onClick={() => openForm(m)}>Programación</button><button className={s.resultAction} onClick={() => openResult(m)}>{m.status === "completed" ? "Editar resultado" : "Cargar resultado"}</button>{m.status === "completed" && <button disabled={busy} onClick={() => action(async () => { await saveResult(m.id, null, null, []); }, "El resultado fue anulado y sus estadísticas se retiraron.")}>Anular resultado</button>}<button onClick={() => setDeleting(m)}>Eliminar</button></>}/>
  </section>;
 }
