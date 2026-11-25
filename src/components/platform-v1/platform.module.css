@@ -197,3 +197,14 @@ body:has(.leagueDrawer[open]){overflow:hidden}
 .themed .choice:focus-visible{outline:0;box-shadow:inset 0 0 0 2px var(--ink)}
 
 @media(max-width:640px){.themed .header{flex-wrap:wrap}.themed .header>nav{flex-wrap:wrap}}
+
+.quickActions{display:grid;gap:8px;margin:0 0 18px}
+.quickActions button{width:100%;display:flex;align-items:center;gap:14px;padding:16px 20px;border:1px solid color-mix(in srgb,var(--secondary-ink) 24%,var(--league-secondary));border-radius:16px;background:var(--league-secondary);color:var(--secondary-ink);font-size:clamp(17px,2vw,22px);font-weight:650;text-align:left}
+.quickActions button:hover{text-decoration:underline;text-underline-offset:4px}
+.quickActions svg{width:24px;height:24px}
+.themed .adminContent .badge,.themed .adminContent .monogram{background:var(--league-secondary);color:var(--secondary-ink)}
+.themed .adminContent .table th{background:color-mix(in srgb,var(--league-secondary) 13%,var(--surface))}
+.themed .adminCard:hover{border-color:var(--league-secondary);box-shadow:inset 0 -3px var(--league-secondary)}
+.deleteGroup,.deletePrompt{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.themed .rowActions button.deleteActive{background:#af2530;border-color:#af2530;color:white}
+.deletePrompt{padding:6px 10px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 3px 10px #0001;white-space:normal}

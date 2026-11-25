@@ -54,14 +54,17 @@ export default function Manager({ leagueId }: {
     const initialCompetition=allData.competitions[0]?.id===selectedId;
     const l=data.league,played=data.matches.filter(m=>m.status==="completed").length;
     const publicUrl=`https://junta11.vercel.app/liga/${l.slug}`;
-    return <div className={s.adminRoot}><Header account menu={<LeagueNavigation signedIn panelId={l.id} teams={l.mode === "teams"} onSection={setTab} />}/>
-    {tab==="Menú"?<AdministrationMenu name={l.name} teams={l.mode==="teams"} onSelect={setTab}/>:
+    return <div className={s.adminRoot} style={{"--league-secondary":l.secondary_color,"--secondary-ink":inkFor(l.secondary_color)} as CSSProperties}><Header account menu={<LeagueNavigation signedIn panelId={l.id} teams={l.mode === "teams"} onSection={setTab} />}/>
+    {tab==="Menú"?<AdministrationMenu name={l.name} teams={l.mode==="teams"} onSelect={section=>{
+        if(section==="Crear partido" && l.mode==="players") setSelection(allData.competitions[0]?.id ?? "");
+        setTab(section);
+    }}/>:
     <main className={s.adminContent}><div className={s.adminToolbar}><button type="button" className={s.outline} onClick={()=>setTab("Menú")}>Administración</button><span>{l.name}</span><Link href={`/liga/${l.slug}`} className={s.outline}>Ver liga</Link></div>
     <h1>{tab}</h1>
-    {["Partidos","Estadísticas"].includes(tab)&&<CompetitionPicker data={allData} value={selectedId} onChange={setSelection}/>}
+    {["Partidos","Crear partido","Estadísticas"].includes(tab)&&<CompetitionPicker data={allData} value={selectedId} onChange={setSelection}/>}
     {tab==="Equipos"&&<Entities data={allData} kind="teams" onChanged={refresh}/>}
-    {tab==="Jugadores"&&<Entities data={allData} kind="players" onChanged={refresh}/>}
-    {tab==="Partidos"&&<MatchesManager key={selectedId} data={data} onChanged={refresh} allowFixture={initialCompetition&&allData.matches.length===0} allowFriendsCreation={initialCompetition}/>}
+    {(tab==="Jugadores"||tab==="Agregar jugador")&&<Entities key={tab} startCreating={tab==="Agregar jugador"} data={allData} kind="players" onChanged={refresh}/>}
+    {(tab==="Partidos"||tab==="Crear partido")&&<MatchesManager key={tab+selectedId} startCreating={tab==="Crear partido"} data={data} onChanged={refresh} allowFixture={initialCompetition&&allData.matches.length===0} allowFriendsCreation={initialCompetition}/>}
     {tab==="Estadísticas"&&<><div className={s.statsGrid}>{[["Equipos",data.teams.filter(t=>t.is_active!==false).length],["Jugadores",data.players.length],["Partidos jugados",played],["Partidos programados",data.matches.length-played]].map(([label,value])=><div className={s.stat} key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>{l.mode==="teams"&&<section className={s.panel}><h2>Posiciones</h2><StandingsTable data={data}/></section>}<section className={s.panel}><h2>Jugadores</h2><PlayersTable data={data}/></section></>}
     {tab==="Temporadas"&&<StructureManager data={allData} onChanged={refresh} onSelect={id=>{setSelection(id);setTab("Partidos");}}/>}
     {tab==="Noticias"&&<NewsManager data={allData} onChanged={refresh}/>}

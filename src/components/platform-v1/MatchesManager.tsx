@@ -8,14 +8,15 @@ import { Notice } from "./ui";
 import MatchCalendar from "./MatchCalendar";
 import {argentinaDateTimeLocal,argentinaDateTimeIso} from "@/lib/platform/calendar";
 import s from "./platform.module.css";
-export default function MatchesManager({ data, onChanged, allowFixture=true, allowFriendsCreation=true }: {
+export default function MatchesManager({ data, onChanged, startCreating=false, allowFixture=true, allowFriendsCreation=true }: {
     data: LeagueBundle;
     onChanged: () => Promise<void>;
+    startCreating?: boolean;
     allowFixture?: boolean;
     allowFriendsCreation?: boolean;
 }) {
-    const [form, setForm] = useState(false), [schedule, setSchedule] = useState<Match | null>(null), [result, setResult] = useState<Match | null>(null), [deleting, setDeleting] = useState<Match | null>(null);
-    const [home, setHome] = useState(""), [away, setAway] = useState(""), [when, setWhen] = useState(""), [venue, setVenue] = useState(""), [round, setRound] = useState(1), [homeName, setHomeName] = useState("Equipo A"), [awayName, setAwayName] = useState("Equipo B");
+    const [form, setForm] = useState(startCreating && !!data.competitions.length && (data.league.mode !== "players" || allowFriendsCreation)), [schedule, setSchedule] = useState<Match | null>(null), [result, setResult] = useState<Match | null>(null), [deleting, setDeleting] = useState<Match | null>(null);
+    const [home, setHome] = useState(data.teams.filter(t=>t.is_active!==false)[0]?.id ?? ""), [away, setAway] = useState(data.teams.filter(t=>t.is_active!==false)[1]?.id ?? ""), [when, setWhen] = useState(""), [venue, setVenue] = useState(""), [round, setRound] = useState(1), [homeName, setHomeName] = useState("Equipo A"), [awayName, setAwayName] = useState("Equipo B");
     const [participants, setParticipants] = useState<string[]>(data.players.map(p => p.id)), [balanced, setBalanced] = useState(false), [split, setSplit] = useState<{
         home: Player[];
         away: Player[];
@@ -69,6 +70,8 @@ export default function MatchesManager({ data, onChanged, allowFixture=true, all
     function togglePlayer(player: Player, side: "home" | "away", checked: boolean) { setStats(old => checked ? [...old.filter(x => x.player_id !== player.id), { match_id: result!.id, league_id: data.league.id, player_id: player.id, side, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0, rating: null }] : old.filter(x => x.player_id !== player.id)); }
     function changeStat(pid: string, key: keyof MatchPlayer, value: number | null) { setStats(old => old.map(x => x.player_id === pid ? { ...x, [key]: value } : x)); }
     return <section className={s.panel}><div className={s.panelTitle}><h2>Partidos y resultados</h2><div className={s.wrap}>{!friends && data.league.format !== "friendly" && <button className={s.outline} disabled={busy || !allowFixture || activeTeams.length < 2 || data.matches.length > 0} onClick={() => action(async () => { await generateFixture(data.league.id,data.competitions[0]?.id); }, "El fixture está listo. Completá los días y horarios de cada partido.")}>Generar fixture</button>}<button className={s.buttonSmall} disabled={busy || !data.competitions.length || (friends && !allowFriendsCreation)} onClick={() => openForm()}>Programar partido</button></div></div>
+ {startCreating && !data.competitions.length && <Notice>Creá una competencia en Temporadas para programar el partido.</Notice>}
+ {startCreating && friends && !allowFriendsCreation && <Notice>Elegí la competencia inicial para crear el partido.</Notice>}
  {!friends && data.matches.length === 0 && <p className={s.help}>Para generar el fixture cargá al menos dos equipos. Cada pareja se programa una vez, o dos si elegiste ida y vuelta.</p>}
  {!friends&&!allowFixture&&data.matches.length===0&&<Notice>Podés programar partidos manualmente en esta competencia. La generación automática para varias competencias sigue pendiente.</Notice>}{success && <Notice>{success}</Notice>}{error && <Notice error>{error}</Notice>}
  {form && <form className={s.editor} onSubmit={submitMatch}><h3>{schedule ? "Editar programación" : "Programar partido"}</h3>

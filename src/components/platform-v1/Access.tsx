@@ -72,7 +72,7 @@ export default function Access() {
       {error && <Notice error>{error}</Notice>}
       {!recovery && <div className={v.authQuestions}>
         <button type="button" disabled={busy} onClick={() => { setRecovery(true); setError(""); }}>¿Olvidaste tu contraseña?</button>
-        <Link href="/registro">¿Ya tienes cuenta?</Link>
+        <Link href="/registro">¿Aún no tienes cuenta?</Link>
       </div>}
       <button type="submit" className={v.action} disabled={busy}>{busy ? "Un momento…" : recovery ? "Enviar enlace" : "Ingresar"}</button>
     </form>}
