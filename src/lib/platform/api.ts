@@ -2,13 +2,8 @@ import { platformClient } from "./client";
 import { formatNames, slugify, validateDraft } from "./domain";
 import type { League, LeagueBundle, LeagueDraft, Match, MatchPlayer } from "./types";
 const columns = "id,slug,name,description,purpose,mode,expected_participants,format,primary_color,secondary_color,logo_url,points_win,points_draw,points_loss,is_public,created_at";
-export async function myLeagues(): Promise<League[]> {
-    const { data: { user }, error: authError } = await platformClient().auth.getUser();
-    if (authError)
-        throw authError;
-    if (!user)
-        return [];
-    const { data, error } = await platformClient().from("league_members").select(`league:leagues(${columns})`).eq("user_id", user.id);
+export async function myLeagues(userId: string, signal: AbortSignal): Promise<League[]> {
+    const { data, error } = await platformClient().from("league_members").select(`league:leagues(${columns})`).eq("user_id", userId).abortSignal(signal);
     if (error)
         throw error;
     return (data ?? []).flatMap(row => Array.isArray(row.league) ? row.league : row.league ? [row.league] : []) as League[];

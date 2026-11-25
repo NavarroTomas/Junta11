@@ -29,29 +29,45 @@ export function Header({ account = false, menu }: {
         setError(messageFor(e));
     } }}>Cerrar sesión</button></> : <><Link href="/demo" className={s.hideMobile}>Ver ejemplo</Link><Link href="/login">Ingresar</Link><Link href="/registro" className={s.buttonSmall}>Crear mi liga </Link></>}<ThemeToggle/></nav></header>{error && <Notice error>{error}</Notice>}</>;
 }
-export function usePlatformSession() {
+export function usePlatformSession(attempt = 0) {
     const configured = isPlatformConfigured();
     const [user, setUser] = useState<User | null>(null), [ready, setReady] = useState(!configured), [error, setError] = useState(configured ? "" : "La conexión con Supabase todavía no está configurada.");
     useEffect(() => {
         if (!configured)
             return;
         let active = true;
+        setReady(false);
+        setError("");
+        const timer = window.setTimeout(() => {
+            if (active) {
+                setError("No pudimos comprobar tu sesión a tiempo. Volvé a intentar.");
+                setReady(true);
+            }
+        }, 15000);
         const db = platformClient();
-        db.auth.getSession().then(({ data, error }) => { if (active) {
-            setUser(data.session?.user ?? null);
-            if (error)
-                setError(messageFor(error));
-            setReady(true);
-        } }).catch(e => { if (active) {
-            setError(messageFor(e));
-            setReady(true);
-        } });
-        const { data: { subscription } } = db.auth.onAuthStateChange((_event, session) => { if (active) {
+        let receivedEvent = false;
+        const { data: { subscription } } = db.auth.onAuthStateChange((_event, session) => {
+            if (!active) return;
+            receivedEvent = true;
+            clearTimeout(timer);
             setUser(session?.user ?? null);
+            setError("");
             setReady(true);
-        } });
-        return () => { active = false; subscription.unsubscribe(); };
-    }, [configured]);
+        });
+        db.auth.getSession().then(({ data, error }) => {
+            if (!active || receivedEvent) return;
+            clearTimeout(timer);
+            setUser(data.session?.user ?? null);
+            setError(error ? messageFor(error) : "");
+            setReady(true);
+        }).catch(error => {
+            if (!active || receivedEvent) return;
+            clearTimeout(timer);
+            setError(messageFor(error));
+            setReady(true);
+        });
+        return () => { active = false; clearTimeout(timer); subscription.unsubscribe(); };
+    }, [configured, attempt]);
     return { user, ready, error };
 }
 export function Notice({ children, error = false }: {
