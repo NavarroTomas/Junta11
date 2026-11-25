@@ -5,12 +5,16 @@ export function administrationModules(teams:boolean) {
 }
 export default function AdministrationMenu({name,teams,onSelect}:{name:string;teams:boolean;onSelect:(section:string)=>void}){
  const modules=administrationModules(teams);
+ const actions=[{label:"Crear partido",icon:3},{label:"Agregar jugador",icon:2}];
+ const cards=[...modules.slice(0,4),...actions,...modules.slice(4)];
  return <main className={s.adminMenu}><div className={s.adminHeading}><h1>Administración</h1><span>{name}</span></div>
-  <div className={s.quickActions}>
-    <button type="button" onClick={()=>onSelect("Crear partido")}><ModuleIcon index={3}/>Crear partido</button>
-    <button type="button" onClick={()=>onSelect("Agregar jugador")}><ModuleIcon index={2}/>Agregar jugador</button>
-  </div>
-  <nav className={s.adminGrid} aria-label="Administración">{modules.map(item=><button type="button" key={item.label} className={s.adminCard} onClick={()=>onSelect(item.label)}><ModuleIcon index={item.icon}/><span>{item.label}</span></button>)}</nav>
+  <nav className={s.adminGrid} aria-label="Administración">
+    {cards.map(item=><button type="button" key={item.label}
+      className={actions.includes(item) ? `${s.adminCard} ${s.featuredCard}` : s.adminCard}
+      onClick={()=>onSelect(item.label)}>
+      <ModuleIcon index={item.icon}/><span>{item.label}</span>
+    </button>)}
+  </nav>
   <footer className={s.adminFooter}>JUNTA11</footer>
  </main>;
 }
