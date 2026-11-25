@@ -14,11 +14,12 @@ export function Brand({ light = false }: {
     return <Wordmark/>;
 }
 export function Arrow() { return null; }
-export function Header({ account = false }: {
+export function Header({ account = false, menu }: {
     account?: boolean;
+    menu?: React.ReactNode;
 }) {
     const router = useRouter(), [error, setError] = useState("");
-    return <><header className={s.header}><Brand /><nav aria-label="Navegación principal">{account ? <><Link href="/mis-ligas">Mis ligas</Link><button className={s.textButton} onClick={async () => { try {
+    return <><header className={s.header}>{menu}<Brand /><nav aria-label="Navegación principal">{account ? <><Link href="/mis-ligas">Mis ligas</Link><button className={s.textButton} onClick={async () => { try {
         const { error } = await platformClient().auth.signOut({scope:"local"});
         if (error)
             throw error;

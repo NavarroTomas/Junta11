@@ -425,6 +425,7 @@ opener.addEventListener('click',()=>{if(dialog.open)return;previousOverflow = do
 document.getElementById('close-menu').addEventListener('click',closeMenu);
 dialog.addEventListener('close',()=>{restore();opener.setAttribute('aria-expanded','false');opener.focus();});
 function jump(index) {closeMenu();const bounds=section.getBoundingClientRect();scrollTo({top:bounds.top+scrollY+(bounds.height-innerHeight)*(index===0?0:(index+.1)/11),behavior:'instant'});}
+if (location.hash === "#como-funciona") requestAnimationFrame(() => jump(5));
 document.querySelectorAll('[data-jump]').forEach(button=>button.addEventListener('click',()=>jump(Number(button.dataset.jump))));
 document.querySelectorAll('.jump-start').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();jump(0);}));
 document.querySelectorAll('[data-app-link]').forEach(link=>link.addEventListener('click',closeMenu));

@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
-import { loadLeague } from "@/lib/platform/api";
+import { canManage, loadLeague } from "@/lib/platform/api";
 import { messageFor } from "@/lib/platform/client";
 import { inkFor, matchLabel } from "@/lib/platform/domain";
 import type { LeagueBundle } from "@/lib/platform/types";
-import { Arrow, Brand, Loading, Monogram, Notice } from "./ui";
+import { Brand, Loading, Monogram, Notice, usePlatformSession } from "./ui";
 import { dateLabel, MatchRows, NewsCards, PlayersTable, StandingsTable } from "./LeagueViews";
 import s from "./platform.module.css";
+import LeagueNavigation from "./LeagueNavigation";
 import MatchCalendar from "./MatchCalendar";
 import PublicProfile from "./PublicProfile";
 import {leaguePath,profilePath,type ProfileView} from "@/lib/platform/profiles";
@@ -25,6 +26,20 @@ export default function PublicLeague({ slug, example, view }: {
         setError("");
     } }).catch(e => { if (active)
         setError(messageFor(e)); }); return () => { active = false; }; }, [slug, example, retry]);
+    const { user, ready } = usePlatformSession();
+    const [accessKey, setAccessKey] = useState("");
+    const leagueId = allData?.league.id;
+    const userId = user?.id;
+    useEffect(() => {
+        let active = true;
+        if (userId && leagueId && !example) {
+            canManage(leagueId).then(allowed => {
+                if (active) setAccessKey(allowed ? userId + ":" + leagueId : "");
+            }).catch(() => { if (active) setAccessKey(""); });
+        } else setAccessKey("");
+        return () => { active = false; };
+    }, [userId, leagueId, example]);
+    const panelId = userId && accessKey === userId + ":" + leagueId ? leagueId : undefined;
     if (error)
         return <main className={s.page}><Brand /><Notice error>{error}</Notice><button className={s.outline} onClick={() => setRetry(n => n + 1)}>Volver a intentar</button></main>;
     if (!allData)
@@ -32,7 +47,7 @@ export default function PublicLeague({ slug, example, view }: {
     const selectedId=selectCompetitionId(allData,selection),data=competitionBundle(allData,selectedId);
     const l = data.league, next = [...data.matches].filter(m => m.status === "scheduled").sort((a, b) => String(a.starts_at ?? "9999").localeCompare(String(b.starts_at ?? "9999")))[0];
     return <div style={{ "--league-primary": l.primary_color, "--league-ink": inkFor(l.primary_color), "--league-secondary": l.secondary_color } as CSSProperties}>
-    <header className={s.publicHeader}><Link href={example ? "/demo" : `/liga/${l.slug}`} className={s.publicIdentity}><Monogram name={l.name} image={l.logo_url}/><div><strong>{l.name}</strong><small>{data.seasons[0]?.name ?? "Temporada 1"} · {l.mode === "teams" ? "Liga por equipos" : "Grupo de jugadores"}</small></div></Link><nav className={s.publicNav} aria-label="Acceso a la plataforma"><Link href="/">Inicio</Link><Link href="/registro" className={s.buttonSmall}>Crear mi liga </Link></nav></header>
+    <header className={s.publicHeader}><LeagueNavigation signedIn={!!user} panelId={panelId} teams={l.mode === "teams"} /><Link href={example ? "/demo" : `/liga/${l.slug}`} className={s.publicIdentity}><Monogram name={l.name} image={l.logo_url}/><div><strong>{l.name}</strong><small>{data.seasons[0]?.name ?? "Temporada 1"} · {l.mode === "teams" ? "Liga por equipos" : "Grupo de jugadores"}</small></div></Link><nav className={s.publicNav} aria-label="Acceso a la plataforma">{user ? <Link href={panelId ? `/panel/${panelId}` : "/mis-ligas"} className={s.manageLink}>Administrar</Link> : ready && <Link href="/registro" className={s.buttonSmall}>Crear mi liga</Link>}</nav></header>
     <main>{example && <div style={{ maxWidth: 1240, margin: "20px auto 0", padding: "0 20px" }}><Notice>Datos de ejemplo.</Notice></div>}{!view&&<section className={s.publicHero}><div><h1>{l.name}</h1>{l.description&&<p>{l.description}</p>}<span className={s.badge}>{data.teams.filter(t=>t.is_active!==false).length} equipos · {data.players.length} jugadores · {data.matches.filter(m => m.status === "completed").length} partidos jugados</span></div><aside className={s.publicHeroAside}><span>Próximo encuentro</span>{next ? <><h2>{matchLabel(next, "home", data)}<br />vs. {matchLabel(next, "away", data)}</h2><p>{dateLabel(next.starts_at)}{next.venue ? ` · ${next.venue}` : ""}</p></> : <><h2>Sin partidos programados</h2></>}</aside></section>}
     {!view&&<nav className={s.publicTabs} aria-label="Secciones de la liga">{["Inicio", "Partidos", l.mode === "teams" ? "Posiciones" : "Ranking", "Jugadores", "Equipos", "Noticias"].filter(x => l.mode === "teams" || x !== "Equipos").map(t => <button key={t} aria-current={tab === t ? "page" : undefined} onClick={() => setTab(t)}>{t}</button>)}</nav>}
     <div className={s.page}>{!view&&<CompetitionPicker data={allData} value={selectedId} onChange={setSelection}/>}{view&&<PublicProfile data={allData} view={view}/>}

@@ -29,3 +29,17 @@ for(const [kind,id] of [['equipos','t0'],['jugadores','p0'],['partidos','m0'],['
 assert.ok(render(React.createElement(Profile,{data:sample,view:{kind:'jugadores',id:'missing'}})).includes('No encontramos esta ficha'));
 assert.ok(render(React.createElement(Profile,{data:{...sample,news:sample.news.map(n=>({...n,published:false}))},view:{kind:'noticias',id:'n0'}})).includes('No encontramos esta ficha'),'Draft news has no public article');
 console.log('Public profile regressions passed: four views, missing records, draft visibility and completed-match statistics');
+
+const Drawer = require('../src/components/platform-v1/LeagueNavigation.tsx').default;
+const drawer = props => render(React.createElement(Drawer, props));
+const visitorMenu = drawer({signedIn:false, teams:true});
+assert.ok(visitorMenu.includes('/#como-funciona') && visitorMenu.includes('/login'));
+assert.ok(!visitorMenu.includes('aria-label="Administración"'));
+const memberMenu = drawer({signedIn:true, teams:false, panelId:'liga'});
+assert.ok(memberMenu.includes('/panel/liga?seccion=Partidos'));
+assert.ok(!memberMenu.includes('seccion=Equipos'));
+assert.ok(!drawer({signedIn:true, teams:true}).includes('/panel/'));
+const Access = require('../src/components/platform-v1/Access.tsx').default;
+const login = render(React.createElement(Access));
+assert.ok(login.includes('¿Olvidaste tu contraseña?'));
+assert.ok(login.indexOf('¿Ya tienes cuenta?') < login.indexOf('type="submit"'));

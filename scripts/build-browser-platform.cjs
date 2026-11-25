@@ -25,12 +25,12 @@ const definitions = Object.fromEntries(
 webpack({
   mode: 'production',
   context: root,
-  entry: path.join(platform, 'entry.tsx'),
+  entry: { platform: path.join(platform, 'entry.tsx'), 'platform-landing': path.join(platform, 'landing-session.ts') },
   target: 'web',
   devtool: false,
   output: {
     path: path.join(root, 'public/junta11'),
-    filename: 'platform.js',
+    filename: '[name].js',
     chunkFilename: 'platform-[contenthash].js',
     publicPath: '/junta11/',
   },

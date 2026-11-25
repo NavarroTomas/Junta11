@@ -63,3 +63,6 @@ html[data-theme="dark"] .skip,html[data-theme="dark"] .no-script{background:#151
 .action{padding:10px 18px;min-height:44px;border:1px solid currentColor;border-radius:999px;background:transparent;color:inherit;justify-content:center;font-size:14px;font-weight:500;transition:background-color .18s,color .18s}.action:hover{background:#191919;color:#fff;border-color:#191919}html[data-theme=dark] .action:hover{background:#f3f0e8;color:#191919;border-color:#f3f0e8}
 
 html[data-theme=light] .action:hover{background:#191919;color:#fff;border-color:#191919}html[data-theme=dark] .action:hover{background:#f3f0e8;color:#191919;border-color:#f3f0e8}
+
+#landing-admin{position:absolute;right:0;top:50%;transform:translateY(-50%);border-radius:999px;padding:10px 16px;background:#a83918;color:white;font-size:14px;font-weight:600}
+@media(max-width:520px){#landing-admin{top:100%;transform:none}}

@@ -70,9 +70,12 @@ export default function Access() {
         </div>
       </>}
       {error && <Notice error>{error}</Notice>}
+      {!recovery && <div className={v.authQuestions}>
+        <button type="button" disabled={busy} onClick={() => { setRecovery(true); setError(""); }}>¿Olvidaste tu contraseña?</button>
+        <Link href="/registro">¿Ya tienes cuenta?</Link>
+      </div>}
       <button type="submit" className={v.action} disabled={busy}>{busy ? "Un momento…" : recovery ? "Enviar enlace" : "Ingresar"}</button>
     </form>}
-    <button type="button" className={v.secondary} disabled={busy} onClick={() => { setRecovery(!recovery); setError(""); setSent(false); }}>{recovery ? "Volver" : "Olvidé mi contraseña"}</button>
-    {!recovery && <Link href="/registro" className={v.secondary}>Crear cuenta</Link>}
+    {recovery && <button type="button" className={v.secondary} disabled={busy} onClick={() => { setRecovery(false); setError(""); setSent(false); }}>Volver</button>}
   </AuthLayout>;
 }

@@ -17,11 +17,16 @@ import CompetitionPicker from "./CompetitionPicker";
 import {competitionBundle,selectCompetitionId} from "@/lib/platform/competition";
 import s from "./platform.module.css";
 import v from "./presentation.module.css";
-import AdministrationMenu from "./AdministrationMenu";
+import LeagueNavigation from "./LeagueNavigation";
+import AdministrationMenu, { administrationModules } from "./AdministrationMenu";
 export default function Manager({ leagueId }: {
     leagueId: string;
 }) {
     const router = useRouter(), { user, ready, error: sessionError } = usePlatformSession(), [allData, setData] = useState<LeagueBundle | null>(null), [error, setError] = useState(""), [tab, setTab] = useState("Menú"), [copied, setCopied] = useState(false), [selection,setSelection]=useState("");
+    useEffect(() => {
+        const requested = new URLSearchParams(window.location.search).get("seccion");
+        if (allData && administrationModules(allData.league.mode === "teams").some(item => item.label === requested)) setTab(requested!);
+    }, [allData?.league.id]);
     const refresh = useCallback(async () => { const d = await loadLeague(leagueId); setData(d); }, [leagueId]);
     useEffect(() => { if (!ready)
         return; if (!user) {
@@ -49,7 +54,7 @@ export default function Manager({ leagueId }: {
     const initialCompetition=allData.competitions[0]?.id===selectedId;
     const l=data.league,played=data.matches.filter(m=>m.status==="completed").length;
     const publicUrl=`https://junta11.vercel.app/liga/${l.slug}`;
-    return <div className={s.adminRoot}><Header account/>
+    return <div className={s.adminRoot}><Header account menu={<LeagueNavigation signedIn panelId={l.id} teams={l.mode === "teams"} onSection={setTab} />}/>
     {tab==="Menú"?<AdministrationMenu name={l.name} teams={l.mode==="teams"} onSelect={setTab}/>:
     <main className={s.adminContent}><div className={s.adminToolbar}><button type="button" className={s.outline} onClick={()=>setTab("Menú")}>Administración</button><span>{l.name}</span><Link href={`/liga/${l.slug}`} className={s.outline}>Ver liga</Link></div>
     <h1>{tab}</h1>
