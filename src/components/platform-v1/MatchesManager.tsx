@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { LeagueBundle, Match, MatchPlayer, Player } from "@/lib/platform/types";
 import { generateFixture, removeEntity, saveEntity, saveResult, updateMatchSchedule } from "@/lib/platform/api";
 import { messageFor, platformClient } from "@/lib/platform/client";
 import { matchLabel, playerStandings, splitPlayers, validateResult } from "@/lib/platform/domain";
 import { Notice } from "./ui";
+import ParticipantPicker from "./ParticipantPicker";
 import MatchCalendar from "./MatchCalendar";
 import {argentinaDateTimeLocal,argentinaDateTimeIso} from "@/lib/platform/calendar";
 import s from "./platform.module.css";
@@ -15,6 +16,13 @@ export default function MatchesManager({ data, onChanged, startCreating=false, a
     allowFixture?: boolean;
     allowFriendsCreation?: boolean;
 }) {
+    const [step, setStep] = useState(1);
+    const stepHeading = useRef<HTMLHeadingElement>(null);
+    function goToStep(next: number) {
+        setError("");
+        setStep(next);
+        requestAnimationFrame(() => stepHeading.current?.focus());
+    }
     const [form, setForm] = useState(startCreating && !!data.competitions.length && (data.league.mode !== "players" || allowFriendsCreation)), [schedule, setSchedule] = useState<Match | null>(null), [result, setResult] = useState<Match | null>(null), [deleting, setDeleting] = useState<Match | null>(null);
     const [home, setHome] = useState(data.teams.filter(t=>t.is_active!==false)[0]?.id ?? ""), [away, setAway] = useState(data.teams.filter(t=>t.is_active!==false)[1]?.id ?? ""), [when, setWhen] = useState(""), [venue, setVenue] = useState(""), [round, setRound] = useState(1), [homeName, setHomeName] = useState("Equipo A"), [awayName, setAwayName] = useState("Equipo B");
     const [participants, setParticipants] = useState<string[]>(data.players.map(p => p.id)), [balanced, setBalanced] = useState(false), [split, setSplit] = useState<{
@@ -34,7 +42,7 @@ export default function MatchesManager({ data, onChanged, startCreating=false, a
     finally {
         setBusy(false);
     } }
-    function openForm(m?: Match) { setResult(null); setError(""); setSchedule(m ?? null); setHome(m?.home_team_id ?? activeTeams[0]?.id ?? ""); setAway(m?.away_team_id ?? activeTeams[1]?.id ?? ""); setWhen(argentinaDateTimeLocal(m?.starts_at ?? null)); setVenue(m?.venue ?? ""); setRound(m?.round ?? 1); setHomeName(m?.home_label ?? "Equipo A"); setAwayName(m?.away_label ?? "Equipo B"); setParticipants(data.players.map(p => p.id)); setSplit(null); setForm(true); }
+    function openForm(m?: Match) { setStep(1);setBalanced(false); setResult(null); setError(""); setSchedule(m ?? null); setHome(m?.home_team_id ?? activeTeams[0]?.id ?? ""); setAway(m?.away_team_id ?? activeTeams[1]?.id ?? ""); setWhen(argentinaDateTimeLocal(m?.starts_at ?? null)); setVenue(m?.venue ?? ""); setRound(m?.round ?? 1); setHomeName(m?.home_label ?? "Equipo A"); setAwayName(m?.away_label ?? "Equipo B"); setParticipants(data.players.map(p => p.id)); setSplit(null); setForm(true); }
     function openResult(m: Match) { setForm(false); setError(""); setResult(m); setHomeScore(m.home_score === null ? "" : String(m.home_score)); setAwayScore(m.away_score === null ? "" : String(m.away_score)); setStats(data.stats.filter(s => s.match_id === m.id).map(s => ({ ...s }))); }
     async function submitMatch(e: React.FormEvent) {
         e.preventDefault();
@@ -69,14 +77,71 @@ export default function MatchesManager({ data, onChanged, startCreating=false, a
     } await action(async () => { await saveResult(result.id, h, a, stats); setResult(null); }, "Resultado y estadísticas guardados. Las posiciones ya están actualizadas."); }
     function togglePlayer(player: Player, side: "home" | "away", checked: boolean) { setStats(old => checked ? [...old.filter(x => x.player_id !== player.id), { match_id: result!.id, league_id: data.league.id, player_id: player.id, side, goals: 0, assists: 0, yellow_cards: 0, red_cards: 0, rating: null }] : old.filter(x => x.player_id !== player.id)); }
     function changeStat(pid: string, key: keyof MatchPlayer, value: number | null) { setStats(old => old.map(x => x.player_id === pid ? { ...x, [key]: value } : x)); }
+    if (form && !schedule) {
+        const enough = friends ? participants.length >= 2 : !!home && !!away && home !== away;
+        function distribute(mode: boolean) {
+            const ratings = new Map(playerStandings(data).filter(p => p.rating !== null).map(p => [p.id, p.rating!]));
+            setSplit(splitPlayers(data.players.filter(p => participants.includes(p.id)), mode, ratings));
+        }
+        function advance(event: React.FormEvent) {
+            event.preventDefault();
+            if (busy) return;
+            if (step === 1) { goToStep(2); return; }
+            if (!enough) { goToStep(2); return; }
+            if (step === 2) {
+                if (friends && !split) distribute(balanced);
+                goToStep(3);
+                return;
+            }
+            void submitMatch(event);
+        }
+        return <form className={s.matchWizard} onSubmit={advance}>
+            <p className={s.stepCount}>Paso {step} de 3</p>
+            <h2 ref={stepHeading} tabIndex={-1}>{["¿Cuándo se juega?", "¿Quiénes juegan?", "Detalles del partido"][step - 1]}</h2>
+            {step === 1 && <label className={s.field}>Día y hora de Argentina (opcional)
+                <input type="datetime-local" value={when} onChange={event => setWhen(event.target.value)}/>
+            </label>}
+            {step === 2 && (friends ? <>
+                <ParticipantPicker players={data.players} selected={participants} onChange={ids => {setParticipants(ids);setSplit(null);}}/>
+                {!enough && <p>Elegí al menos dos jugadores. Si te faltan, podés agregarlos en Jugadores.</p>}
+            </> : <>
+                {activeTeams.length < 2 && <p>Agregá dos equipos activos en Equipos para programar un partido.</p>}
+                <div className={s.formRow}>{["Local","Visitante"].map((label,i)=><label key={label} className={s.field}>{label}
+                    <select value={i ? away : home} onChange={event => (i ? setAway : setHome)(event.target.value)}>
+                        <option value="">Elegir equipo</option>{activeTeams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select></label>)}</div>
+                {home && home === away && <p>Elegí dos equipos distintos.</p>}
+            </>)}
+            {step === 3 && <>
+                <p>{when ? when.split("T")[0].split("-").reverse().join("/") + " · " + when.split("T")[1] : "Horario a definir"} · {friends ? participants.length + " jugadores" : activeTeams.find(t=>t.id===home)?.name + " vs. " + activeTeams.find(t=>t.id===away)?.name}</p>
+                {friends && split && <details open><summary>Equipos</summary>
+                    <label className={s.field}>Reparto<select value={balanced?"balanced":"random"} onChange={event=>{const mode=event.target.value==="balanced";setBalanced(mode);distribute(mode);}}>
+                        <option value="random">Aleatorio</option><option value="balanced">Equilibrado por nota</option>
+                    </select></label>
+                    <div className={s.formRow}>{(["home","away"] as const).map((side,i)=><div key={side}>
+                        <label className={s.field}>Nombre del equipo {i?"B":"A"}<input required maxLength={80} value={i?awayName:homeName} onChange={event=>(i?setAwayName:setHomeName)(event.target.value)}/></label>
+                        <p>{split[side].map(p=>p.name).join(", ")}</p></div>)}</div>
+                    <button type="button" className={s.outline} onClick={()=>distribute(balanced)}>Volver a repartir</button>
+                </details>}
+                <details><summary>Cancha y jornada</summary><div className={s.formRow}>
+                    <label className={s.field}>Cancha (opcional)<input maxLength={160} value={venue} onChange={event=>setVenue(event.target.value)}/></label>
+                    <label className={s.field}>Jornada<input type="number" required min={1} max={10000} value={round} onChange={event=>setRound(Number(event.target.value))}/></label>
+                </div></details>
+            </>}
+            {error && <Notice error>{error}</Notice>}
+            <div className={s.wizardActions}>
+                <button type="button" className={s.outline} disabled={busy} onClick={()=>step===1?setForm(false):goToStep(step-1)}>{step===1?"Cancelar":"Atrás"}</button>
+                <button type="submit" className={s.buttonSmall} disabled={busy || (step===2 && !enough)}>{step===3?(busy?"Guardando…":"Guardar partido"):step===1&&!when?"Definir después":"Continuar"}</button>
+            </div>
+        </form>;
+    }
     return <section className={s.panel}><div className={s.panelTitle}><h2>Partidos y resultados</h2><div className={s.wrap}>{!friends && data.league.format !== "friendly" && <button className={s.outline} disabled={busy || !allowFixture || activeTeams.length < 2 || data.matches.length > 0} onClick={() => action(async () => { await generateFixture(data.league.id,data.competitions[0]?.id); }, "El fixture está listo. Completá los días y horarios de cada partido.")}>Generar fixture</button>}<button className={s.buttonSmall} disabled={busy || !data.competitions.length || (friends && !allowFriendsCreation)} onClick={() => openForm()}>Programar partido</button></div></div>
  {startCreating && !data.competitions.length && <Notice>Creá una competencia en Temporadas para programar el partido.</Notice>}
  {startCreating && friends && !allowFriendsCreation && <Notice>Elegí la competencia inicial para crear el partido.</Notice>}
  {!friends && data.matches.length === 0 && <p className={s.help}>Para generar el fixture cargá al menos dos equipos. Cada pareja se programa una vez, o dos si elegiste ida y vuelta.</p>}
  {!friends&&!allowFixture&&data.matches.length===0&&<Notice>Podés programar partidos manualmente en esta competencia. La generación automática para varias competencias sigue pendiente.</Notice>}{success && <Notice>{success}</Notice>}{error && <Notice error>{error}</Notice>}
  {form && <form className={s.editor} onSubmit={submitMatch}><h3>{schedule ? "Editar programación" : "Programar partido"}</h3>
- {!friends && !schedule && <div className={s.formRow}><label className={s.field}>Equipo local<select required value={home} onChange={e => setHome(e.target.value)}><option value="">Elegir equipo</option>{activeTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label><label className={s.field}>Equipo visitante<select required value={away} onChange={e => setAway(e.target.value)}><option value="">Elegir equipo</option>{activeTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label></div>}
- {friends && <><div className={s.formRow}><label className={s.field}>Nombre del equipo A<input required maxLength={80} value={homeName} onChange={e => setHomeName(e.target.value)}/></label><label className={s.field}>Nombre del equipo B<input required maxLength={80} value={awayName} onChange={e => setAwayName(e.target.value)}/></label></div>{!schedule && <><p className={s.help}>Marcá quiénes van a jugar. Si son impares, el equipo A tendrá un jugador más.</p><div className={s.wrap} style={{ marginBlock: 16 }}>{data.players.map(p => <label key={p.id} className={s.wrap} style={{ fontSize: 12, padding: "8px 12px", border: "1px solid #ced9c0", borderRadius: 5 }}><input type="checkbox" checked={participants.includes(p.id)} onChange={e => { setParticipants(old => e.target.checked ? [...old, p.id] : old.filter(id => id !== p.id)); setSplit(null); }}/>{p.name}</label>)}</div><div className={s.wrap}><label className={s.wrap}><input type="radio" name="split" checked={!balanced} onChange={() => { setBalanced(false); setSplit(null); }}/>Aleatorio</label><label className={s.wrap}><input type="radio" name="split" checked={balanced} onChange={() => { setBalanced(true); setSplit(null); }}/>Equilibrado por nota</label><button type="button" className={s.outline} disabled={participants.length < 2} onClick={() => { const ratings = new Map(playerStandings(data).filter(p => p.rating !== null).map(p => [p.id, p.rating!])); setSplit(splitPlayers(data.players.filter(p => participants.includes(p.id)), balanced, ratings)); }}>Repartir equipos</button></div><p className={s.help}>El reparto equilibrado usa la nota media de partidos anteriores. Sin historial se toma 5. Las posiciones todavía no intervienen.</p>{split && <div className={s.twoColumns} style={{ marginBlock: 20 }}>{(["home", "away"] as const).map(side => <div key={side}><h4>{side === "home" ? homeName : awayName}</h4>{split[side].map(p => <p className={s.help} key={p.id}>{p.name}</p>)}</div>)}</div>}</>}
+ {friends && <><div className={s.formRow}><label className={s.field}>Nombre del equipo A<input required maxLength={80} value={homeName} onChange={e => setHomeName(e.target.value)}/></label><label className={s.field}>Nombre del equipo B<input required maxLength={80} value={awayName} onChange={e => setAwayName(e.target.value)}/></label></div>
  </>}
  <div className={s.formRow} style={{ marginTop: 16 }}><label className={s.field}>Día y hora (opcional)<input type="datetime-local" value={when} onChange={e => setWhen(e.target.value)}/></label><label className={s.field}>Cancha (opcional)<input maxLength={160} value={venue} onChange={e => setVenue(e.target.value)}/></label><label className={s.field}>Número de fecha<input type="number" required min={1} max={10000} value={round} onChange={e => setRound(Number(e.target.value))}/></label></div><p className={s.help}>Los horarios se muestran en hora de Argentina.</p><div className={s.editorActions}><button className={s.buttonSmall} disabled={busy}>{busy ? "Guardando…" : "Guardar partido"}</button><button type="button" className={s.textButton} onClick={() => setForm(false)}>Cancelar</button></div></form>}
  {result && <form className={s.editor} onSubmit={submitResult}><h3>{matchLabel(result, "home", data)} vs. {matchLabel(result, "away", data)}</h3><div className={s.formRow}><label className={s.field}>Goles de {matchLabel(result, "home", data)}<input type="number" required min={0} max={999} value={homeScore} onChange={e => setHomeScore(e.target.value)}/></label><label className={s.field}>Goles de {matchLabel(result, "away", data)}<input type="number" required min={0} max={999} value={awayScore} onChange={e => setAwayScore(e.target.value)}/></label></div><p className={s.help}>Marcá solamente a quienes jugaron. Cada participante suma un partido jugado. La nota es opcional y va de 1 a 10. Una participación guardada conserva el lado del partido aunque el jugador cambie de equipo.</p>

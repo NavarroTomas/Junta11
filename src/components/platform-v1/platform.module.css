@@ -207,3 +207,19 @@ body:has(.leagueDrawer[open]){overflow:hidden}
 
 .themed .adminCard.featuredCard{background:var(--accent);border-color:var(--accent);color:var(--surface)}
 .themed .adminCard.featuredCard:hover{box-shadow:inset 0 0 0 2px currentColor}
+
+.matchWizard{margin:0 auto;width:min(100%,680px);min-height:62dvh;display:flex;flex-direction:column;justify-content:center;gap:20px;padding:32px clamp(4px,3vw,28px);font-size:17px}
+.matchWizard>h2,.matchWizard>.stepCount,.matchWizard>p{text-align:center;margin:0}
+.matchWizard>h2{font-size:clamp(30px,4vw,48px)}
+.stepCount{color:var(--muted);font-size:15px}
+.themed .matchWizard .field{font-size:17px}
+.matchWizard details{border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.matchWizard summary{cursor:pointer;font-size:18px;font-weight:600}
+.matchWizard details[open]>summary{margin-bottom:16px}
+.participantPicker{display:grid;gap:8px}
+.pickerHeading,.wizardActions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.playerTiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,115px),1fr));gap:8px}
+.playerTiles label{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px;padding:12px;min-height:82px;border:1px solid var(--line);border-radius:12px;text-align:center;overflow-wrap:anywhere;cursor:pointer}
+.playerTiles label:has(:checked){background:color-mix(in srgb,var(--accent) 9%,var(--surface));border-color:var(--accent)}
+.playerTiles input{accent-color:var(--accent)}
+.matchWizard small{font-weight:400;color:var(--muted)}

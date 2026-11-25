@@ -48,5 +48,10 @@ assert.ok(login.indexOf('¿Aún no tienes cuenta?') < login.indexOf('type="submi
 const MatchesManager = require('../src/components/platform-v1/MatchesManager.tsx').default;
 const Entities = require('../src/components/platform-v1/Entities.tsx').default;
 const quickProps = {data:sample, startCreating:true, onChanged:async()=>{}};
-assert.ok(render(React.createElement(MatchesManager,quickProps)).includes('Guardar partido'));
+const firstStep = render(React.createElement(MatchesManager,quickProps));
+assert.ok(firstStep.includes('¿Cuándo se juega?') && firstStep.includes('Definir después'));
+assert.ok(!firstStep.includes('Guardar partido') && !firstStep.includes('Limpiar filtros'));
+const PickerByPosition = require('../src/components/platform-v1/ParticipantPicker.tsx').default;
+const grouped = render(React.createElement(PickerByPosition,{players:[{id:'x',name:'Ana',position:'Arquero'},{id:'y',name:'Juan',position:''}],selected:['x'],onChange(){}}));
+assert.ok(grouped.includes('Arquero') && grouped.includes('Sin definir') && grouped.includes('1 de 2 seleccionados'));
 assert.ok(render(React.createElement(Entities,{...quickProps,kind:'players'})).includes('<form'));
