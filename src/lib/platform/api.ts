@@ -131,7 +131,7 @@ export async function uploadImage(leagueId: string, file: File): Promise<string>
     const { error } = await platformClient().storage.from("league-images").upload(path, file, { contentType: file.type, upsert: false });
     if (error)
         throw error;
-    return platformClient().storage.from("league-images").getPublicUrl(path).data.publicUrl;
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/authenticated/league-images/${path}`;
 }
 
 /** Withdraw a team without removing its roster, matches or results. */

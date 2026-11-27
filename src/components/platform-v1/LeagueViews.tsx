@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import Image from "./LeagueImage";
 import Link from "next/link";
 import {profilePath} from "@/lib/platform/profiles";
 import type { LeagueBundle, Match } from "@/lib/platform/types";

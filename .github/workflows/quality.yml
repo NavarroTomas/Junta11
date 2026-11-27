@@ -52,3 +52,23 @@ jobs:
 
       - name: Regression checks
         run: npm test
+
+  league-privacy:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test-only
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test privacy migration on disposable PostgreSQL
+        env:
+          PGPASSWORD: test-only
+        run: |
+          psql -X -h localhost -U postgres -v ON_ERROR_STOP=1 -1 \
+            -f tests/league-privacy/fixture.sql \
+            -f supabase/migrations/20261126190000_league_privacy.sql \
+            -f tests/league-privacy/verify.sql

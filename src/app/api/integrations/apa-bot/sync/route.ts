@@ -67,6 +67,7 @@ function authorized(request: Request, rawBody: string) {
 }
 
 export async function POST(request: Request) {
+  if (process.env.VERCEL_ENV === "preview") return NextResponse.json({ error: "integration_disabled" }, { status: 404 });
   const rawBody = await request.text();
   if (rawBody.length > 2_000_000 || !authorized(request, rawBody)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   let body: SyncPayload;

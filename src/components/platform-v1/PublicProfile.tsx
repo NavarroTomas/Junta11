@@ -1,3 +1,4 @@
+import LeagueImage from "./LeagueImage";
 import Link from "next/link";
 import type {LeagueBundle} from "@/lib/platform/types";
 import {leaguePath,profilePath,playerSummary,teamMatches,type ProfileView} from "@/lib/platform/profiles";
@@ -33,5 +34,5 @@ export default function PublicProfile({data,view}:{data:LeagueBundle;view:Profil
    <section className={s.panel}><h2>Jugadores</h2>{stats.length?<PlayersTable data={{...data,matches:[match],stats,players:data.players.filter(player=>stats.some(row=>row.player_id===player.id))}}/>:<p className={s.muted}>Sin estadísticas cargadas</p>}</section></>;
  }
  const news=data.news.find(n=>n.id===view.id&&n.published)!;
- return <article className={s.newsArticle}><div className={s.profileHeading}><div><p className={s.profileLabel}>Noticia · {new Date(news.created_at).toLocaleDateString("es-AR")}</p><h1>{news.title}</h1></div>{back}</div>{news.image_url&&<img src={news.image_url} alt=""/>}<p>{news.body}</p></article>;
+ return <article className={s.newsArticle}><div className={s.profileHeading}><div><p className={s.profileLabel}>Noticia · {new Date(news.created_at).toLocaleDateString("es-AR")}</p><h1>{news.title}</h1></div>{back}</div>{news.image_url&&<LeagueImage src={news.image_url} alt=""/>}<p>{news.body}</p></article>;
 }

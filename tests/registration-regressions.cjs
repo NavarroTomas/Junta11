@@ -17,7 +17,7 @@ assert.equal(registrationEmailError('  persona+liga@example.com  '),null);
 for(const email of ['','persona','persona@','persona @example.com'])assert.ok(registrationEmailError(email));
 const bundle=fs.readFileSync(path.join(__dirname,'../public/junta11/platform.js'),'utf8');
 const client=bundle.match(/function platformClient\(\)[\s\S]*?\n\}/)?.[0];
-assert.ok(client?.includes('https://ilkkqynzvwskpwjgtapi.supabase.co'),'The actual bundled client must use the connected project, not a documentation example');
+assert.ok(client?.includes(require('../scripts/platform-environment.cjs').platformEnvironment().NEXT_PUBLIC_SUPABASE_URL),'The actual bundled client must use the connected project, not a documentation example');
 assert.ok(!client.includes('xyzcompany.supabase.co'));
 console.log('Registration regressions passed: old drafts, authenticated resume, email validation and deployed API host');
 
