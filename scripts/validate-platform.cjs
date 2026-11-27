@@ -8,7 +8,7 @@ assert.equal(exportsObject.useRouter(),exportsObject.useRouter(),'Router identit
 exportsObject.useRouter().replace('/mis-ligas');assert.deepEqual(navigation,[['replace','/mis-ligas']]);
 const bundle=fs.readFileSync(path.join(root,'public/junta11/platform.js'),'utf8');
 for(const forbidden of ['process.env.NEXT_PUBLIC_SUPABASE_URL','process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY','process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY'])assert.ok(!bundle.includes(forbidden),'Public config was not compiled');
-assert.ok(bundle.includes('ilkkqynzvwskpwjgtapi.supabase.co'),'Unexpected Supabase project');
+assert.ok(bundle.includes(require('./platform-environment.cjs').platformEnvironment().NEXT_PUBLIC_SUPABASE_URL),'Unexpected Supabase project');
 assert.ok(!fs.readFileSync(path.join(root,'public/junta11/index.html'),'utf8').includes('https://gestiona-tu-liga-tesis.vercel.app/'),'Landing links still leave Sites');
 (async()=>{const source=fs.readFileSync(path.join(root,'dist/server/index.js'),'utf8');const {default:worker}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 for(const route of ['/','/login','/registro','/crear-liga','/recuperar','/mis-ligas','/demo','/panel/00000000-0000-4000-8000-000000000001','/l/liga-prueba','/junta11/platform.js','/junta11/story.js','/junta11/story.css','/junta11/story-sprite.png']){const r=await worker.fetch(new Request('https://example.test'+route));assert.equal(r.status,200,route);const bytes=new Uint8Array(await r.arrayBuffer());assert.ok(bytes.length>0,route);if(route.startsWith('/panel/')||route.startsWith('/l/'))assert.ok(new TextDecoder().decode(bytes).includes('platform-root'));}

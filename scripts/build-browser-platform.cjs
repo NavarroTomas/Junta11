@@ -1,17 +1,10 @@
 const path = require('node:path');
 const { webpack, DefinePlugin } = require('next/dist/compiled/webpack/webpack-lib');
-const config = require('../src/platform/public-config.json');
+const config = require('./platform-environment.cjs').platformEnvironment();
 
 const root = path.resolve(__dirname, '..');
 const source = path.join(root, 'src');
 const platform = path.join(source, 'platform');
-
-if (config.NEXT_PUBLIC_SUPABASE_URL !== 'https://ilkkqynzvwskpwjgtapi.supabase.co') {
-  throw new Error('Unexpected Supabase project URL');
-}
-if (!config.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.startsWith('sb_publishable_')) {
-  throw new Error('Missing browser publishable key');
-}
 
 const publicKeys = [
   'NEXT_PUBLIC_SUPABASE_URL',

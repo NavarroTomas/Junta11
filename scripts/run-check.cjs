@@ -6,6 +6,7 @@ const groups = {
   build: ['scripts/build-browser-platform.cjs', 'scripts/build-worker.cjs'],
   test: [
     'tests/security-regressions.mjs',
+    'tests/platform-environment.cjs',
     'tests/local-league-regressions.cjs',
     'tests/original-league-adapter.cjs',
     'tests/registration-regressions.cjs',
